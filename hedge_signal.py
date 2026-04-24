@@ -14,6 +14,11 @@ def get_cleaned_data(ticker, mkt_ticker, start):
     df_asset = yf.download(ticker, start=start, auto_adjust=True)
     df_mkt   = yf.download(mkt_ticker, start=start, auto_adjust=True)
 
+    if isinstance(df_asset.columns, pd.MultiIndex):
+        df_asset.columns = [col[0] for col in df_asset.columns]
+    if isinstance(df_mkt.columns, pd.MultiIndex):
+        df_mkt.columns = [col[0] for col in df_mkt.columns]
+
     df_w = pd.DataFrame({
         'Close':     df_asset['Close'].resample('W-FRI').last(),
         'Volume':    df_asset['Volume'].resample('W-FRI').sum(),
@@ -21,7 +26,6 @@ def get_cleaned_data(ticker, mkt_ticker, start):
     }).dropna()
 
     return df_w
-
 # =========================================================
 # 2. 特徵工程
 # =========================================================
