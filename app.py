@@ -15,11 +15,20 @@ plt.rcParams['axes.unicode_minus'] = False
 # =========================================================
 # 1. 資料下載與清洗 (Data Acquisition)
 # =========================================================
+session = requests.Session()
+session.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+})
 def get_cleaned_data(ticker, mkt_ticker, start):
-    df = yf.download([ticker, mkt_ticker], start=start, auto_adjust=True)
+    df = yf.download([ticker, mkt_ticker], start=start, auto_adjust=True, session=session)
+    if df.empty:
+        return pd.DataFrame()
 
     if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [f"{col[0]}_{col[1]}" for col in df.columns]
+        if 'Close' in df.columns.get_level_values(0):
+            df.columns = [f"{col[0]}_{col[1]}" for col in df.columns]
+        else:
+            df.columns = [f"{col[1]}_{col[0]}" for col in df.columns]
 
     asset_close = df[f"Close_{ticker}"]
     asset_vol   = df[f"Volume_{ticker}"]
@@ -73,7 +82,15 @@ WEEKLY_CARRY   = FUTURES_CARRY_RATE / WEEKS_PER_YEAR
 OPEN_CLOSE_COST = (FUTURES_COMMISSION + FUTURES_SLIPPAGE) * 2
 
 st.title(f"{ASSET} 買進持有 vs 期貨對沖策略比較")
-
+with st.spinner("下載資料中..."):
+    df_raw = get_cleaned_data(ASSET, MARKET, START_DATE)
+    if df_raw.empty:
+        st.error("無法從 Yahoo Finance 下載資料。這通常是因為 Streamlit Cloud 的 IP 遭到短暫阻擋，請稍後再試。")
+        st.stop() # 停止執行後續程式碼，避免出現 IndexError
+    df_feat = build_features(df_raw)
+    if len(df_feat) < 50:
+        st.error(f"資料筆數不足！清洗後僅剩 {len(df_feat)} 筆，無法進行機器學習訓練與切分。")
+        st.stop()
 with st.spinner("下載資料中..."):
     df_raw  = get_cleaned_data(ASSET, MARKET, START_DATE)
     df_feat = build_features(df_raw)
