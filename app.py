@@ -4,12 +4,23 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request, os
 import matplotlib.ticker as mticker
 from matplotlib.patches import Patch
 from sklearn.metrics import (f1_score, precision_score, recall_score,
                              roc_auc_score, brier_score_loss, confusion_matrix)
 
-plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'Arial Unicode MS', 'DejaVu Sans']
+font_path = "/tmp/NotoSansTC.otf"
+if not os.path.exists(font_path):
+    urllib.request.urlretrieve(
+        "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Regular.otf",
+        font_path
+    )
+fm.fontManager.addfont(font_path)
+prop = fm.FontProperties(fname=font_path)
+
+plt.rcParams['font.sans-serif'] = [prop.get_name(), 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
 # =========================================================
@@ -275,7 +286,7 @@ ax2.fill_between(dates, dd_hedge * 100, 0, alpha=0.4, color='#F58518', label='�
 ax2.legend(fontsize=9, loc='lower left')
 ax2.set_ylabel('回撤 (%)', fontsize=11)
 ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.0f%%'))
-ax2.set_title('水下回撤比較', fontsize=12)
+ax2.set_title('回撤比較', fontsize=12)
 ax2.grid(True, alpha=0.3)
 ax2.set_xlabel('日期', fontsize=11)
 
