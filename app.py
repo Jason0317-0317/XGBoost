@@ -15,9 +15,6 @@ plt.rcParams['axes.unicode_minus'] = False
 # =========================================================
 # 1. 資料下載與清洗 (Data Acquisition)
 # =========================================================
-session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-})
 def get_cleaned_data(ticker, mkt_ticker, start):
     df = yf.download([ticker, mkt_ticker], start=start, auto_adjust=True)
     if df.empty:
